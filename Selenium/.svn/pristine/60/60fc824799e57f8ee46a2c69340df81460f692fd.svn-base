@@ -1,0 +1,188 @@
+package main;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import model.TestModel;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
+
+public class ReadExcelTest {
+	private static WebDriver driver = null;
+	private static ChromeTest ct = new ChromeTest();
+	private List<TestModel> list = new ArrayList<TestModel>();
+	
+	public static void main(String[] args) {
+		ReadExcelTest rt = new ReadExcelTest();
+		rt.readFile();
+//		rt.register();
+	}
+	
+	private void readFile(){
+		try {
+			FileInputStream file = new FileInputStream(new File("C:\\Users\\Lannes\\Desktop\\selenium.xlsx"));
+			XSSFWorkbook workbook1 = new XSSFWorkbook(file);
+			XSSFSheet sheet1 = workbook1.getSheetAt(0);
+			int line = 0;
+			String fileName = "";
+			String owner = "";
+			double date = 0; // 42699.0 = 11/25 //42698.0 = 11/24
+			String day = "";
+//			System.out.println("@@:" + sheet1.getPhysicalNumberOfRows());
+			for (int i = 1; i < sheet1.getPhysicalNumberOfRows(); i++) {
+				line = i + 1;
+				TestModel model = new TestModel();
+//				System.out.println("line:" + line);
+				Row row = sheet1.getRow(i);
+				for (int j = 0; j < row.getPhysicalNumberOfCells(); j++) {
+					Cell cell = row.getCell(j);
+					if(j==0){
+						model.setRowGet(String.valueOf(cell.getNumericCellValue()).replace(".0", ""));
+					}else if(j==1){
+						model.setRowName(cell.getStringCellValue());
+					}else if(j==2){
+						model.setRowType(String.valueOf(cell.getNumericCellValue()).replace(".0", ""));
+					}else if(j==3){
+						try{
+//							System.out.println("int:" + line + " : " + cell.getNumericCellValue());
+							model.setRowInput(String.valueOf(cell.getNumericCellValue()).replace(".0", ""));
+						}catch(Exception e){
+							e.printStackTrace();
+							model.setRowInput(cell.getStringCellValue());
+//							System.out.println("String" + line + " : " + cell.getStringCellValue().replace(".0", ""));
+						}
+					}else if(j==4){
+						model.setDivide(cell.getNumericCellValue());
+					}
+					
+				}
+				list.add(model);
+				// System.out.println("");
+			}
+			file.close();
+			runTest();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void runTest(){
+		System.setProperty("webdriver.chrome.driver","/chromedriver.exe");
+		driver = new ChromeDriver();
+		driver.get("http://localhost:8070/AlumniAssociation/");	
+		for(int i=0;i<list.size();i++){
+			TestModel model = list.get(i);
+			try {
+				doTest(model);
+				long timeDivide = (long) list.get(i).getDivide()*1000;
+				Thread.sleep(timeDivide);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+	
+	private void doTest(TestModel model){
+		System.out.println("Type:" + model.getRowType());
+		System.out.println("Get:" + model.getRowGet());
+		System.out.println("Name:" + model.getRowName());
+//		System.out.println("Input:" + model.getRowInput());
+//		System.out.println("Divide:" + model.getDivide());
+		// text,by Name
+		if("1".equals(model.getRowType()) && "1".equals(model.getRowGet()) ){
+			driver.findElement(By.name(model.getRowName())).sendKeys(model.getRowInput());
+		//text,by Id
+		}else if("1".equals(model.getRowType()) && "2".equals(model.getRowGet()) ){
+			driver.findElement(By.id(model.getRowName())).sendKeys(model.getRowInput());
+		//text,by Xpath
+		}else if("1".equals(model.getRowType()) && "3".equals(model.getRowGet()) ){
+			driver.findElement(By.xpath(model.getRowName())).sendKeys(model.getRowInput());
+		//select, by Name	
+		}else if("2".equals(model.getRowType()) && "1".equals(model.getRowGet()) ){
+			System.out.println("run 2-1");
+			Select dropdown1 = new Select(driver.findElement(By.name(model.getRowName())));
+			dropdown1.selectByVisibleText(model.getRowInput());
+		//select, by Id		
+		}else if("2".equals(model.getRowType()) && "2".equals(model.getRowGet()) ){
+			System.out.println("run 2-2");
+			Select dropdown1 = new Select(driver.findElement(By.id(model.getRowName())));
+			dropdown1.selectByVisibleText(model.getRowInput());
+		//select, by Xpath
+		}else if("2".equals(model.getRowType()) && "3".equals(model.getRowGet()) ){
+			System.out.println("run 2-3");
+			Select dropdown1 = new Select(driver.findElement(By.xpath(model.getRowName())));
+			dropdown1.selectByVisibleText(model.getRowInput());
+		//radio, by Name
+		}else if("3".equals(model.getRowType()) && "1".equals(model.getRowGet()) ){
+			System.out.println("run 3-1");
+			driver.findElements(By.name(model.getRowName())).get(model.getRadioValue()).click();
+		//radio, by Id
+		}else if("3".equals(model.getRowType()) && "2".equals(model.getRowGet()) ){
+			System.out.println("run 3-2");
+			driver.findElements(By.id(model.getRowName())).get(model.getRadioValue()).click();
+		//radio, by Xpath
+		}else if("3".equals(model.getRowType()) && "3".equals(model.getRowGet()) ){
+			System.out.println("run 3-3");
+			driver.findElements(By.xpath(model.getRowName())).get(model.getRadioValue()).click();
+		//button, by Name
+		}else if("4".equals(model.getRowType()) && "1".equals(model.getRowGet()) ){
+			System.out.println("run 4-1");
+			driver.findElement(By.name(model.getRowName())).click();
+		//button, by Id
+		}else if("4".equals(model.getRowType()) && "2".equals(model.getRowGet()) ){
+			driver.findElement(By.id(model.getRowName())).click();
+			System.out.println("run 4-2");
+		//button, by Xpath
+		}else if("4".equals(model.getRowType()) && "3".equals(model.getRowGet()) ){
+			System.out.println("run 4-3");
+			driver.findElement(By.xpath(model.getRowName())).click();
+		}
+		System.out.println("---------------------------------");
+	}
+	
+	private void register(){
+		System.setProperty("webdriver.chrome.driver","/chromedriver.exe");
+		driver = new ChromeDriver();
+		driver.get("http://localhost:8070/AlumniAssociation/");	
+//		driver.manage().window().maximize();
+		driver.findElement(By.xpath("//*[@id='wel']/div/a")).click();
+		driver.findElement(By.id("register")).click();
+		driver.findElement(By.id("optionsRadios1")).click();
+		driver.findElement(By.id("accept")).click();
+		driver.findElement(By.id("account")).sendKeys("tkuedu");
+		driver.findElement(By.id("password")).sendKeys("123456");
+		driver.findElement(By.id("confirm")).sendKeys("123456");
+		driver.findElement(By.id("firstName")).sendKeys("楊");
+		driver.findElement(By.id("lastName")).sendKeys("政信");
+		Select dropdown1 = new Select(driver.findElement(By.id("year")));
+		dropdown1.selectByVisibleText("1980");
+		Select dropdown2 = new Select(driver.findElement(By.id("month")));
+		dropdown2.selectByVisibleText("02");
+		Select dropdown3 = new Select(driver.findElement(By.id("day")));
+		dropdown3.selectByVisibleText("17");
+		driver.findElements(By.id("gender")).get(0).click();
+//		driver.findElement(By.id("email")).sendKeys("lannesyang@gmail.com");
+		driver.findElement(By.id("phone")).sendKeys("0975021702");
+		driver.findElement(By.id("address")).sendKeys("新北市永和區永利路115號4樓");
+		driver.findElement(By.id("company")).sendKeys("艾力特科技");
+		driver.findElement(By.id("jobTitle")).sendKeys("java Programer");
+		//勾選第幾個
+		driver.findElements(By.name("graduated")).get(0).click();
+		
+//		driver.findElement(By.xpath("//*[@id='graduated']")).click();
+		//*[@id="graduated"]
+		//*[@id="graduated"]
+	}
+}

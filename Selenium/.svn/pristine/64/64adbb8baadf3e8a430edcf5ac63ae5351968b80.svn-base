@@ -1,0 +1,30 @@
+package main;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class EDemo {
+
+    public static void main(String[] args) throws IOException {
+        //设置chrome.exe和chromedriver.exe的系统参数
+        System.setProperty("webdriver.chrome.bin", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
+        System.setProperty("webdriver.chrome.driver", "/chromedriver.exe");
+        //启动chrome实例
+        WebDriver driver = new ChromeDriver();
+        //访问“简书网站首页”
+        driver.get("http://24h.pchome.com.tw/sign/nb.htm");
+        //指定了OutputType.FILE做为参数传递给getScreenshotAs()方法，其含义是将截取的屏幕以文件形式返回。
+        File srcFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+        //利用FileUtils工具类的copyFile()方法保存getScreenshotAs()返回的文件对象。
+        FileUtils.copyFile(srcFile, new File("D:\\"+"screenshot.png"));
+        //关闭浏览器
+        driver.quit(); 
+    }
+
+}

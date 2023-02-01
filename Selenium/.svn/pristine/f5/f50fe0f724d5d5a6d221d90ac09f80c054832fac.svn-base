@@ -1,0 +1,94 @@
+package main;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
+
+public class AlumniAssociationTest {
+	private static WebDriver driver = null;
+	private static ChromeTest ct = new ChromeTest();
+	
+	public static void main(String[] args) {
+		AlumniAssociationTest at = new AlumniAssociationTest();
+		at.register();
+		/*
+		try {
+			at.test();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		*/
+	}
+	
+	private void test() throws IOException{
+        System.setProperty("webdriver.chrome.bin", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
+        System.setProperty("webdriver.chrome.driver", "/chromedriver.exe");
+        WebDriver driver = new ChromeDriver();
+        driver.get("http://localhost:8070/AlumniAssociation/");
+//        driver.findElement(By.xpath("//*[@id='wel']/div/b")).click();
+//        driver.findElement(By.xpath("//*[@id='wel']/div/a")).click();
+//		driver.findElement(By.id("account")).sendKeys("ivanyang");
+        File srcFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+        takeScreenShot(srcFile);
+	}
+	
+	private void login(){
+		System.setProperty("webdriver.chrome.driver","/chromedriver.exe");
+		driver = new ChromeDriver();
+		driver.get("http://localhost:8070/AlumniAssociation/");	
+		driver.manage().window().maximize();
+		driver.findElement(By.xpath("//*[@id='wel']/div/a")).click();
+		driver.findElement(By.id("account")).sendKeys("ivanyang");
+		driver.findElement(By.id("password")).sendKeys("ivan0217");
+		driver.findElement(By.id("login")).click();
+	}
+	
+	private void register(){
+		System.setProperty("webdriver.chrome.driver","/chromedriver.exe");
+		driver = new ChromeDriver();
+		driver.get("http://localhost:8070/AlumniAssociation/");	
+//		driver.manage().window().maximize();
+		driver.findElement(By.xpath("//*[@id='wel']/div/a")).click();
+		driver.findElement(By.id("register")).click();
+		driver.findElement(By.id("optionsRadios1")).click();
+		driver.findElement(By.id("accept")).click();
+		driver.findElement(By.id("account")).sendKeys("lannesyang@gmail.com");
+		driver.findElement(By.id("password")).sendKeys("123456");
+		driver.findElement(By.id("confirm")).sendKeys("123456");
+		driver.findElement(By.id("firstName")).sendKeys("楊");
+		driver.findElement(By.id("lastName")).sendKeys("政信");
+		Select dropdown1 = new Select(driver.findElement(By.id("year")));
+		dropdown1.selectByVisibleText("1980");
+		Select dropdown2 = new Select(driver.findElement(By.id("month")));
+		dropdown2.selectByVisibleText("02");
+		Select dropdown3 = new Select(driver.findElement(By.id("day")));
+		dropdown3.selectByVisibleText("17");
+		driver.findElements(By.id("gender")).get(0).click();
+//		driver.findElement(By.id("email")).sendKeys("lannesyang@gmail.com");
+		driver.findElement(By.id("phone")).sendKeys("0975021702");
+		driver.findElement(By.id("address")).sendKeys("新北市永和區永利路115號4樓");
+		driver.findElement(By.id("company")).sendKeys("艾力特科技");
+		driver.findElement(By.id("jobTitle")).sendKeys("java Programer");
+		//勾選第幾個
+		driver.findElements(By.name("graduated")).get(0).click();
+		
+//		driver.findElement(By.xpath("//*[@id='graduated']")).click();
+		//*[@id="graduated"]
+		//*[@id="graduated"]
+	}
+	
+	private void takeScreenShot(File srcFile) throws IOException{
+		System.out.println("takeScreenShot");
+        FileUtils.copyFile(srcFile, new File("D:\\"+"screenshot.png"));
+	}
+}
